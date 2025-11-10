@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciador de Horas de Estágio NPJ (v3.0)</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="script.js" defer></script>
+</head>
+<body>
+
+    <header>
+        <h1>Gerenciador de Horas de Estágio NPJ</h1>
+    </header>
+
+    <section class="dashboard-container">
+        
+        <div class="card-kpi kpi-blue">
+            <label>Total de Horas</label>
+            <div id="kpi-total-horas" class="kpi-value">0.0</div>
+        </div>
+        
+        <div class="card-kpi kpi-green">
+            <label>Nota Atual</label>
+            <div id="kpi-nota-atual" class="kpi-value">Zero</div>
+        </div>
+
+        <div class="card-kpi kpi-gold">
+            <label>Horas Faltantes (p/ 75h)</label>
+            <div id="kpi-horas-faltantes" class="kpi-value">75.0</div>
+        </div>
+
+    </section>
+
+    <main class="container">
+        
+        <section class="panel panel-atividades">
+            <h2>Lançar Nova Atividade (Manual)</h2>
+            <p class="subtitulo">Selecione uma atividade na tabela abaixo e preencha as horas ao lado.</p>
+            
+            <div class="tabela-container">
+                <table id="tabela-atividades">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Atividade</th>
+                            <th>Lançado (h)</th>
+                            <th>Limite (h)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela-corpo"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <aside class="panel panel-controlo">
+            
+            <section class="card-controlo">
+                <h3>Preencher Horas</h3>
+                <form id="form-lancamento">
+                    <label for="input-horas">Horas:</label>
+                    <input type="number" id="input-horas" value="1.0" step="0.5" min="0.5" required>
+                    <button type="submit" id="btn-adicionar">Adicionar</button>
+                </form>
+            </section>
+
+            <section class="card-controlo card-fill-height">
+                <h3>Histórico de Lançamentos</h3>
+                <div id="historico-lista" class="historico-container">
+                    <p class="historico-placeholder">Nenhuma atividade lançada ainda.</p>
+                </div>
+            </section>
+
+        </aside>
+    </main>
+
+</body>
+</html>

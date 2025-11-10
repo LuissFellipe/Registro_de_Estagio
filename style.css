@@ -1,0 +1,222 @@
+/* --- Configuração Global e Novo Tema Claro --- */
+:root {
+    --c-bg: #F4F7F6;           /* Fundo cinza-claro (da imagem) */
+    --c-panel: #FFFFFF;        /* Cartões brancos (da imagem) */
+    --c-text: #333333;         /* Texto escuro (padrão) */
+    --c-text-label: #6b6b6b;   /* Texto de rótulo (label) */
+    --c-border: #E0E0E0;       /* Bordas suaves */
+
+    /* Cores dos KPIs (baseado na imagem) */
+    --c-blue: #007BFF;
+    --c-green: #28A745;
+    --c-gold: #D48806; /* Um pouco mais escuro que o da imagem p/ contraste */
+
+    --font-fam: 'Roboto', sans-serif; /* Fonte nova */
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-fam);
+    background-color: var(--c-bg);
+    color: var(--c-text);
+    line-height: 1.6;
+}
+
+header {
+    background-color: var(--c-panel);
+    color: var(--c-blue);
+    padding: 1rem 2rem;
+    text-align: center;
+    box-shadow: var(--shadow);
+    border-bottom: 3px solid var(--c-blue);
+    margin-bottom: 2rem;
+}
+
+h1 { font-weight: 700; }
+h2 { font-weight: 500; color: #000; }
+h3 { font-weight: 500; color: var(--c-text-label); border-bottom: 1px solid var(--c-border); padding-bottom: 5px; }
+
+/* --- (NOVO) Dashboard de KPIs --- */
+.dashboard-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    padding: 0 1.5rem 1.5rem 1.5rem;
+}
+
+.card-kpi {
+    flex: 1; /* Crescem igualmente */
+    min-width: 200px; /* Largura mínima */
+    background-color: var(--c-panel);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+}
+
+.card-kpi label {
+    font-size: 1rem;
+    font-weight: 500;
+    opacity: 0.9;
+}
+
+.kpi-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+/* Cores dos KPIs */
+.kpi-blue { background-color: var(--c-blue); }
+.kpi-green { background-color: var(--c-green); }
+.kpi-gold { background-color: var(--c-gold); }
+
+
+/* --- Layout Principal (Flexbox) --- */
+.container {
+    display: flex;
+    flex-wrap: wrap; /* Permite quebrar em telas pequenas */
+    padding: 0 1.5rem 1.5rem 1.5rem;
+    gap: 1.5rem; /* Espaço entre os painéis */
+}
+
+.panel {
+    background-color: var(--c-panel);
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+}
+
+.panel-atividades {
+    flex: 3;
+    min-width: 450px;
+}
+.subtitulo {
+    font-size: 0.9rem;
+    color: var(--c-text-label);
+    margin-bottom: 1rem;
+}
+
+.panel-controlo {
+    flex: 2;
+    min-width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.card-controlo {
+    padding: 1rem;
+    border: 1px solid var(--c-border);
+    border-radius: 6px;
+}
+/* Faz o cartão do histórico crescer */
+.card-fill-height {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* --- Estilo da Tabela de Atividades --- */
+.tabela-container {
+    max-height: 60vh;
+    overflow-y: auto;
+    border: 1px solid var(--c-border);
+    border-radius: 6px;
+}
+
+#tabela-atividades {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#tabela-atividades th,
+#tabela-atividades td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--c-border);
+}
+
+#tabela-atividades th {
+    background-color: #F9F9F9;
+    color: #000;
+    position: sticky;
+    top: 0;
+}
+
+#tabela-atividades tbody tr {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+#tabela-atividades tbody tr:hover {
+    background-color: #F0F8FF; /* Azul bem claro */
+}
+
+#tabela-atividades tbody tr.selected {
+    background-color: var(--c-blue);
+    color: white;
+    font-weight: 500;
+}
+
+/* --- Painel de Controlo (Inputs e Botão) --- */
+#form-lancamento {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+#form-lancamento label {
+    font-weight: 500;
+}
+
+#form-lancamento input[type="number"] {
+    flex: 1;
+    padding: 10px;
+    font-size: 1rem;
+    background-color: #FFF;
+    color: var(--c-text);
+    border: 1px solid var(--c-border);
+    border-radius: 4px;
+}
+
+#btn-adicionar {
+    background-color: var(--c-blue);
+    color: white;
+    font-size: 1rem;
+    font-weight: 500;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 15px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+#btn-adicionar:hover {
+    background-color: #0069D9; /* Azul mais escuro */
+}
+
+/* --- Histórico --- */
+.historico-container {
+    flex: 1; /* Ocupa o espaço do card-fill-height */
+    overflow-y: auto;
+    background-color: #FDFDFD;
+    padding: 10px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.historico-container p {
+    padding: 4px;
+    border-bottom: 1px dashed var(--c-border);
+}
+.historico-placeholder {
+    color: var(--c-text-label);
+    border-bottom: none !important;
+}
