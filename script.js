@@ -51,6 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const inputHoras = document.getElementById('input-horas');
     const historicoLista = document.getElementById('historico-lista');
     const placeholderHistorico = document.querySelector('.historico-placeholder');
+    const btnZerar = document.getElementById('btn-zerar');
 
     
     // --- (NOVO) Funções de Salvar e Carregar ---
@@ -78,6 +79,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     /**
+     * Zera todas as horas lançadas (em todas as atividades) e limpa o histórico.
+     * Confirma a ação com o usuário antes de executar.
+     */
+    function zerarTodasHoras() {
+        const confirma = confirm('Tem certeza que deseja zerar todas as horas lançadas e limpar o histórico? Esta ação não pode ser desfeita.');
+        if (!confirma) return;
+
+        // Zera o campo 'lancado' em todas as atividades
+        for (const id in atividadesData) {
+            atividadesData[id].lancado = 0.0;
+        }
+
+        // Zera total
+        totalHoras = 0.0;
+
+        // Limpa o histórico e mostra placeholder
+        historicoLista.innerHTML = '<p class="historico-placeholder">Nenhuma atividade lançada ainda.</p>';
+        historicoVazio = true;
+
+        // Atualiza UI
+        popularTabela();
+        atualizarProgressoUI();
+
+        // Salva estado
+        salvarDados();
+    }
+
+
+    /**
      * Adiciona um listener de exclusão a todos os botões do histórico.
      * Chamado ao carregar os dados e após criar novos itens no histórico.
      */
@@ -100,12 +130,39 @@ document.addEventListener('DOMContentLoaded', () => {
         const entry = btn.closest('.historico-entry');
         if (!entry) return;
 
-        const atividadeId = btn.dataset.id;
-        const horasStr = btn.dataset.horas;
+        // Primeiro tentamos ler os data-attributes (padrão novo)
+        let atividadeId = btn.dataset.id;
+        let horasStr = btn.dataset.horas;
+
+        // Fallback: se não houver data-attributes (entradas antigas), tentamos
+        // extrair do texto dentro do próprio item do histórico.
+        if (!atividadeId || !horasStr) {
+            const text = entry.textContent || '';
+
+            // Tenta extrair horas com regex, exemplo: "+1.0h" ou "+1,0h"
+            const horasMatch = text.match(/\+\s?(\d+[\.,]?\d*)\s?h/);
+            if (horasMatch) {
+                horasStr = horasMatch[1].replace(',', '.');
+            }
+
+            // Tenta extrair o nome da atividade após o separador "- "
+            const nomeMatch = text.split('-').pop();
+            if (nomeMatch) {
+                const nome = nomeMatch.trim();
+                // Procura pelo id correspondente no objeto atividadesData
+                for (const id in atividadesData) {
+                    if (atividadesData[id].nome === nome) {
+                        atividadeId = id;
+                        break;
+                    }
+                }
+            }
+        }
+
         const horasRemov = parseFloat(horasStr);
 
         if (!atividadeId || isNaN(horasRemov)) {
-            alert('Dados do lançamento inválidos. Não é possível excluir.');
+            alert('Não foi possível identificar corretamente a atividade ou as horas deste lançamento. A exclusão que reverte horas não pode ser realizada.');
             return;
         }
 
@@ -343,5 +400,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // 4. Define o 'ouvinte' do formulário
     formLancamento.addEventListener('submit', adicionarAtividade);
+    // 5. Ouvinte do botão zerar
+    if (btnZerar) btnZerar.addEventListener('click', zerarTodasHoras);
 
 });
