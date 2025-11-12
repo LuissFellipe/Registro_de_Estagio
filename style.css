@@ -250,3 +250,18 @@ h3 { font-weight: 500; color: var(--c-text-label); border-bottom: 1px solid var(
     background: #ffecec;
     border-color: #f5c2c2;
 }
+
+/* Botão de reset (Zerar Todas as Horas) */
+.btn-reset {
+    background-color: #dc3545; /* vermelho perigo */
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.btn-reset:hover {
+    background-color: #c82333;
+}
