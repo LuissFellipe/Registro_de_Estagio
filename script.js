@@ -2,9 +2,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Constantes e Estado da Aplicação ---
     const META_HORAS = 75.0;
+    // (NOVO) Chave para salvar no localStorage.
+    // Mudar isto (ex: 'v4') "reseta" os dados salvos se precisarmos.
     const STORAGE_KEY = 'gerenciadorHorasState_v3';
     
-    // Base de Dados
+    // Base de Dados (A estrutura padrão)
     const atividadesData = {
         '0.0': {nome: 'Lista de Chamada em sala', limite: Infinity, lancado: 0.0},
         '1.1': {nome: 'Plantões de Atendimento', limite: Infinity, lancado: 0.0},
@@ -33,15 +35,17 @@ document.addEventListener('DOMContentLoaded', () => {
         '3.3': {nome: 'Laboratório ENADE', limite: Infinity, lancado: 0.0},
     };
 
-    // Variáveis de estado
+    // Variáveis de estado (serão substituídas pelos dados salvos, se existirem)
     let totalHoras = 0.0;
     let selectedActivityId = null;
     let historicoVazio = true;
 
-    // Referências aos Elementos do DOM
+    // Referências aos Elementos do DOM (KPIs)
     const kpiTotalHoras = document.getElementById('kpi-total-horas');
     const kpiNotaAtual = document.getElementById('kpi-nota-atual');
     const kpiHorasFaltantes = document.getElementById('kpi-horas-faltantes');
+
+    // Referências antigas
     const tabelaCorpo = document.getElementById('tabela-corpo');
     const formLancamento = document.getElementById('form-lancamento');
     const inputHoras = document.getElementById('input-horas');
@@ -49,29 +53,95 @@ document.addEventListener('DOMContentLoaded', () => {
     const placeholderHistorico = document.querySelector('.historico-placeholder');
 
     
-    // --- Funções de Salvar e Carregar ---
+    // --- (NOVO) Funções de Salvar e Carregar ---
 
     /**
-     * Salva o estado atual da aplicação no localStorage.
+     * (NOVO) Salva o estado atual da aplicação no localStorage.
      */
     function salvarDados() {
+        // Criamos um objeto de "estado" para salvar
         const saveState = {
-            atividades: {},
+            atividades: {}, // Salvamos apenas o 'lancado'
             total: totalHoras,
             historicoHTML: historicoLista.innerHTML,
             historicoVazio: historicoVazio
         };
 
-        // Salva apenas o 'lancado' de cada atividade
+        // Itera sobre os dados para salvar apenas o 'lancado' (mais eficiente)
         for (const id in atividadesData) {
             saveState.atividades[id] = { lancado: atividadesData[id].lancado };
         }
         
+        // Converte o objeto para JSON (string) e salva
         localStorage.setItem(STORAGE_KEY, JSON.stringify(saveState));
     }
 
+
     /**
-     * Carrega os dados salvos do localStorage ao iniciar.
+     * Adiciona um listener de exclusão a todos os botões do histórico.
+     * Chamado ao carregar os dados e após criar novos itens no histórico.
+     */
+    function attachHistoricoDeleteHandlers() {
+        const buttons = historicoLista.querySelectorAll('.btn-delete');
+        buttons.forEach(btn => {
+            // Removemos antes para prevenir listeners duplicados
+            btn.removeEventListener('click', onClickExcluir);
+            btn.addEventListener('click', onClickExcluir);
+        });
+    }
+
+    /**
+     * Handler para o clique do botão de excluir em um lançamento do histórico.
+     * Lê os data-attributes (id e horas), confirma a ação, atualiza os dados
+     * (subtrai horas da atividade e do total), atualiza UI e salva.
+     */
+    function onClickExcluir(event) {
+        const btn = event.currentTarget;
+        const entry = btn.closest('.historico-entry');
+        if (!entry) return;
+
+        const atividadeId = btn.dataset.id;
+        const horasStr = btn.dataset.horas;
+        const horasRemov = parseFloat(horasStr);
+
+        if (!atividadeId || isNaN(horasRemov)) {
+            alert('Dados do lançamento inválidos. Não é possível excluir.');
+            return;
+        }
+
+        const infoAtividade = atividadesData[atividadeId];
+        if (!infoAtividade) {
+            alert('Atividade não encontrada.');
+            return;
+        }
+
+        const confirma = confirm(`Deseja realmente remover ${horasRemov.toFixed(1)}h lançadas para "${infoAtividade.nome}"? Esta ação irá subtrair essas horas.`);
+        if (!confirma) return;
+
+        // Subtrai as horas da atividade e do total (proteção para não ficar negativo)
+        const atualLancado = infoAtividade.lancado;
+        const subtrair = Math.min(horasRemov, atualLancado);
+        infoAtividade.lancado = Math.max(0, atualLancado - subtrair);
+
+        totalHoras = Math.max(0, totalHoras - subtrair);
+
+        // Remove a linha da lista de histórico
+        entry.remove();
+
+        // Se ficou vazio, mostra placeholder
+        if (!historicoLista.querySelector('.historico-entry')) {
+            historicoLista.innerHTML = '<p class="historico-placeholder">Nenhuma atividade lançada ainda.</p>';
+            historicoVazio = true;
+        }
+
+        // Atualiza tabela, KPIs e salva
+        atualizarLinhaTabela(atividadeId, infoAtividade.lancado);
+        atualizarProgressoUI();
+        salvarDados();
+    }
+
+    /**
+     * (NOVO) Carrega os dados salvos do localStorage ao iniciar.
      */
     function carregarDados() {
         const savedData = localStorage.getItem(STORAGE_KEY);
@@ -80,6 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const loadedState = JSON.parse(savedData);
 
+                // Verifica se os dados são válidos
                 if (!loadedState.atividades || loadedState.total === undefined) {
                     console.error("Dados salvos corrompidos. Ignorando.");
                     localStorage.removeItem(STORAGE_KEY);
@@ -92,17 +163,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 historicoVazio = loadedState.historicoVazio;
 
                 // Restaura o 'lancado' em cada atividade
-                // Esta abordagem garante robustez se a 'atividadesData' for atualizada no futuro
+                // Esta abordagem garante que se atualizarmos a 'atividadesData'
+                // (ex: mudar um nome), os dados salvos não quebram a app.
                 for (const id in atividadesData) {
                     if (loadedState.atividades[id]) {
                         atividadesData[id].lancado = loadedState.atividades[id].lancado;
                     }
                 }
                 
-                if (!historicoVazio) {
-                     const placeholder = historicoLista.querySelector('.historico-placeholder');
-                     if (placeholder) placeholder.remove();
-                }
+                // Remove o placeholder do histórico se ele não estiver vazio
+                    if (!historicoVazio) {
+                        const placeholder = historicoLista.querySelector('.historico-placeholder');
+                        if (placeholder) placeholder.remove();
+                    }
+
+                    // Reanexa os handlers de exclusão aos botões do histórico (se existirem)
+                    // (listeners serão anexados pela função declarada mais abaixo)
+                    attachHistoricoDeleteHandlers();
 
             } catch (error) {
                 console.error("Erro ao carregar dados salvos (JSON inválido):", error);
@@ -112,7 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    // --- Funções Principais ---
+    // --- Funções Principais (Sem grandes mudanças) ---
 
     function popularTabela() {
         tabelaCorpo.innerHTML = '';
@@ -184,12 +261,12 @@ document.addEventListener('DOMContentLoaded', () => {
         totalHoras += horasAContar;
 
         atualizarLinhaTabela(selectedActivityId, infoAtividade.lancado);
-        adicionarAoHistorico(infoAtividade.nome, horasAContar);
+    adicionarAoHistorico(selectedActivityId, infoAtividade.nome, horasAContar);
         atualizarProgressoUI();
         
         inputHoras.value = "1.0";
 
-        // Salva os dados após cada adição bem-sucedida
+        // (NOVO) Salva os dados após cada adição bem-sucedida
         salvarDados();
     }
 
@@ -201,22 +278,41 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function adicionarAoHistorico(nome, horas) {
+    function adicionarAoHistorico(id, nome, horas) {
         if (historicoVazio) {
             historicoLista.innerHTML = '';
             historicoVazio = false;
         }
 
         const dataStr = new Date().toLocaleDateString('pt-BR');
-        const p = document.createElement('p');
-        p.textContent = `[${dataStr}] +${horas.toFixed(1)}h - ${nome}`;
-        
-        historicoLista.appendChild(p);
+
+        // Container do item do histórico (texto + botão)
+        const div = document.createElement('div');
+        div.className = 'historico-entry';
+
+        const span = document.createElement('span');
+        span.textContent = `[${dataStr}] +${horas.toFixed(1)}h - ${nome}`;
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn-delete';
+        btn.textContent = 'Remover';
+        // Informações necessárias para reverter o lançamento
+        btn.dataset.id = id;
+        btn.dataset.horas = horas.toFixed(1);
+
+        div.appendChild(span);
+        div.appendChild(btn);
+
+        historicoLista.appendChild(div);
         historicoLista.scrollTop = historicoLista.scrollHeight;
+
+        // Anexa o listener apenas para este botão
+        btn.addEventListener('click', onClickExcluir);
     }
 
     function calcularNota(horas) {
-        if (horas < 75) return "Zero"; // Mínimo para aprovação
+        if (horas < 75) return "Zero"; // Corresponde à nota 0 (Zero) ou 5.0 (MINIMO)
         if (horas <= 81) return "5.5";
         if (horas <= 87) return "6.0";
         if (horas <= 93) return "6.5";
@@ -239,10 +335,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    // --- Inicialização ---
+    // --- (ATUALIZADO) Inicialização ---
     
     carregarDados();        // 1. Carrega os dados salvos (se existirem)
-    popularTabela();        // 2. Preenche a tabela (com dados salvos)
+    popularTabela();        // 2. Preenche a tabela (agora com dados salvos)
     atualizarProgressoUI(); // 3. Atualiza os KPIs (com dados salvos)
     
     // 4. Define o 'ouvinte' do formulário
