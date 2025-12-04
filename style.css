@@ -1,17 +1,16 @@
-/* --- Configuração Global e Novo Tema Claro --- */
+/*  Configuração Global */
 :root {
-    --c-bg: #F4F7F6;           /* Fundo cinza-claro (da imagem) */
-    --c-panel: #FFFFFF;        /* Cartões brancos (da imagem) */
-    --c-text: #333333;         /* Texto escuro (padrão) */
-    --c-text-label: #6b6b6b;   /* Texto de rótulo (label) */
-    --c-border: #E0E0E0;       /* Bordas suaves */
-
-    /* Cores dos KPIs (baseado na imagem) */
+    --c-bg: #F4F7F6;          
+    --c-panel: #FFFFFF;        
+    --c-text: #333333;         
+    --c-text-label: #6b6b6b;  
+    --c-border: #E0E0E0;       
+   
     --c-blue: #007BFF;
     --c-green: #28A745;
-    --c-gold: #D48806; /* Um pouco mais escuro que o da imagem p/ contraste */
+    --c-gold: #D48806; 
 
-    --font-fam: 'Roboto', sans-serif; /* Fonte nova */
+    --font-fam: 'Roboto', sans-serif; 
     --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
@@ -42,7 +41,7 @@ h1 { font-weight: 700; }
 h2 { font-weight: 500; color: #000; }
 h3 { font-weight: 500; color: var(--c-text-label); border-bottom: 1px solid var(--c-border); padding-bottom: 5px; }
 
-/* --- (NOVO) Dashboard de KPIs --- */
+
 .dashboard-container {
     display: flex;
     flex-wrap: wrap;
@@ -51,8 +50,8 @@ h3 { font-weight: 500; color: var(--c-text-label); border-bottom: 1px solid var(
 }
 
 .card-kpi {
-    flex: 1; /* Crescem igualmente */
-    min-width: 200px; /* Largura mínima */
+    flex: 1; 
+    min-width: 200px;
     background-color: var(--c-panel);
     color: white;
     padding: 1.5rem;
@@ -78,12 +77,12 @@ h3 { font-weight: 500; color: var(--c-text-label); border-bottom: 1px solid var(
 .kpi-gold { background-color: var(--c-gold); }
 
 
-/* --- Layout Principal (Flexbox) --- */
+/* Layout Principal */
 .container {
     display: flex;
-    flex-wrap: wrap; /* Permite quebrar em telas pequenas */
+    flex-wrap: wrap; 
     padding: 0 1.5rem 1.5rem 1.5rem;
-    gap: 1.5rem; /* Espaço entre os painéis */
+    gap: 1.5rem; 
 }
 
 .panel {
@@ -123,7 +122,7 @@ h3 { font-weight: 500; color: var(--c-text-label); border-bottom: 1px solid var(
     flex-direction: column;
 }
 
-/* --- Estilo da Tabela de Atividades --- */
+/*  Tabela de Atividades */
 .tabela-container {
     max-height: 60vh;
     overflow-y: auto;
@@ -156,7 +155,7 @@ h3 { font-weight: 500; color: var(--c-text-label); border-bottom: 1px solid var(
 }
 
 #tabela-atividades tbody tr:hover {
-    background-color: #F0F8FF; /* Azul bem claro */
+    background-color: #F0F8FF; 
 }
 
 #tabela-atividades tbody tr.selected {
@@ -199,10 +198,10 @@ h3 { font-weight: 500; color: var(--c-text-label); border-bottom: 1px solid var(
 }
 
 #btn-adicionar:hover {
-    background-color: #0069D9; /* Azul mais escuro */
+    background-color: #0069D9; 
 }
 
-/* --- Histórico --- */
+/*  Histórico  */
 .historico-container {
     flex: 1; /* Ocupa o espaço do card-fill-height */
     overflow-y: auto;
@@ -253,7 +252,7 @@ h3 { font-weight: 500; color: var(--c-text-label); border-bottom: 1px solid var(
 
 /* Botão de reset (Zerar Todas as Horas) */
 .btn-reset {
-    background-color: #dc3545; /* vermelho perigo */
+    background-color: #dc3545; 
     color: white;
     border: none;
     padding: 8px 12px;
@@ -265,3 +264,4 @@ h3 { font-weight: 500; color: var(--c-text-label); border-bottom: 1px solid var(
 .btn-reset:hover {
     background-color: #c82333;
 }
+
