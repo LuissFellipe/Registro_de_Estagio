@@ -1,6 +1,5 @@
-/*  Configuração Global */
 :root {
-    --c-bg: #F4F7F6;          
+    --c-bg: #F4F7F6;       
     --c-panel: #FFFFFF;        
     --c-text: #333333;         
     --c-text-label: #6b6b6b;  
@@ -41,7 +40,6 @@ h1 { font-weight: 700; }
 h2 { font-weight: 500; color: #000; }
 h3 { font-weight: 500; color: var(--c-text-label); border-bottom: 1px solid var(--c-border); padding-bottom: 5px; }
 
-
 .dashboard-container {
     display: flex;
     flex-wrap: wrap;
@@ -71,13 +69,10 @@ h3 { font-weight: 500; color: var(--c-text-label); border-bottom: 1px solid var(
     line-height: 1.2;
 }
 
-/* Cores dos KPIs */
 .kpi-blue { background-color: var(--c-blue); }
 .kpi-green { background-color: var(--c-green); }
 .kpi-gold { background-color: var(--c-gold); }
 
-
-/* Layout Principal */
 .container {
     display: flex;
     flex-wrap: wrap; 
@@ -115,14 +110,13 @@ h3 { font-weight: 500; color: var(--c-text-label); border-bottom: 1px solid var(
     border: 1px solid var(--c-border);
     border-radius: 6px;
 }
-/* Faz o cartão do histórico crescer */
+
 .card-fill-height {
     flex: 1;
     display: flex;
     flex-direction: column;
 }
 
-/*  Tabela de Atividades */
 .tabela-container {
     max-height: 60vh;
     overflow-y: auto;
@@ -164,7 +158,6 @@ h3 { font-weight: 500; color: var(--c-text-label); border-bottom: 1px solid var(
     font-weight: 500;
 }
 
-/* --- Painel de Controlo (Inputs e Botão) --- */
 #form-lancamento {
     display: flex;
     gap: 10px;
@@ -201,9 +194,8 @@ h3 { font-weight: 500; color: var(--c-text-label); border-bottom: 1px solid var(
     background-color: #0069D9; 
 }
 
-/*  Histórico  */
 .historico-container {
-    flex: 1; /* Ocupa o espaço do card-fill-height */
+    flex: 1;
     overflow-y: auto;
     background-color: #FDFDFD;
     padding: 10px;
@@ -220,7 +212,6 @@ h3 { font-weight: 500; color: var(--c-text-label); border-bottom: 1px solid var(
     border-bottom: none !important;
 }
 
-/* Estilo para entradas do histórico com botão de remoção */
 .historico-entry {
     display: flex;
     justify-content: space-between;
@@ -250,7 +241,6 @@ h3 { font-weight: 500; color: var(--c-text-label); border-bottom: 1px solid var(
     border-color: #f5c2c2;
 }
 
-/* Botão de reset (Zerar Todas as Horas) */
 .btn-reset {
     background-color: #dc3545; 
     color: white;
@@ -264,4 +254,3 @@ h3 { font-weight: 500; color: var(--c-text-label); border-bottom: 1px solid var(
 .btn-reset:hover {
     background-color: #c82333;
 }
-
