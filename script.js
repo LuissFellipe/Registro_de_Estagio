@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const META_HORAS = 75.0;
     const STORAGE_KEY = 'gerenciadorHorasState_v3';
     
-    // Base de Dados 
+    // --- Base de Dados e Configuração ---
     const atividadesData = {
         '0.0': {nome: 'Lista de Chamada em sala', limite: Infinity, lancado: 0.0},
         '1.1': {nome: 'Plantões de Atendimento', limite: Infinity, lancado: 0.0},
@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let selectedActivityId = null;
     let historicoVazio = true;
 
-    
+    // --- Elementos do DOM ---
     const kpiTotalHoras = document.getElementById('kpi-total-horas');
     const kpiNotaAtual = document.getElementById('kpi-nota-atual');
     const kpiHorasFaltantes = document.getElementById('kpi-horas-faltantes');
@@ -48,12 +48,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const placeholderHistorico = document.querySelector('.historico-placeholder');
     const btnZerar = document.getElementById('btn-zerar');
 
-    
- 
+    // --- Persistência de Dados (Storage) ---
     function salvarDados() {
-       
         const saveState = {
-            atividades: {}, // Salvamos apenas o 'lancado'
+            atividades: {},
             total: totalHoras,
             historicoHTML: historicoLista.innerHTML,
             historicoVazio: historicoVazio
@@ -66,106 +64,6 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(saveState));
     }
 
-
-    function zerarTodasHoras() {
-        const confirma = confirm('Tem certeza que deseja zerar todas as horas lançadas e limpar o histórico? Esta ação não pode ser desfeita.');
-        if (!confirma) return;
-
-        for (const id in atividadesData) {
-            atividadesData[id].lancado = 0.0;
-        }
-
-        totalHoras = 0.0;
-
-        historicoLista.innerHTML = '<p class="historico-placeholder">Nenhuma atividade lançada ainda.</p>';
-        historicoVazio = true;
-
-        popularTabela();
-        atualizarProgressoUI();
-
-        salvarDados();
-    }
-
-
-     
-    function attachHistoricoDeleteHandlers() {
-        const buttons = historicoLista.querySelectorAll('.btn-delete');
-        buttons.forEach(btn => {
-            btn.removeEventListener('click', onClickExcluir);
-            btn.addEventListener('click', onClickExcluir);
-        });
-    }
-
-   
-    function onClickExcluir(event) {
-        const btn = event.currentTarget;
-        const entry = btn.closest('.historico-entry');
-        if (!entry) return;
-
-    
-        let atividadeId = btn.dataset.id;
-        let horasStr = btn.dataset.horas;
-
-        if (!atividadeId || !horasStr) {
-            const text = entry.textContent || '';
-
-            const horasMatch = text.match(/\+\s?(\d+[\.,]?\d*)\s?h/);
-            if (horasMatch) {
-                horasStr = horasMatch[1].replace(',', '.');
-            }
-
-            const nomeMatch = text.split('-').pop();
-            if (nomeMatch) {
-                const nome = nomeMatch.trim();
-                // Procura pelo id correspondente no objeto atividadesData
-                for (const id in atividadesData) {
-                    if (atividadesData[id].nome === nome) {
-                        atividadeId = id;
-                        break;
-                    }
-                }
-            }
-        }
-
-        const horasRemov = parseFloat(horasStr);
-
-        if (!atividadeId || isNaN(horasRemov)) {
-            alert('Não foi possível identificar corretamente a atividade ou as horas deste lançamento. A exclusão que reverte horas não pode ser realizada.');
-            return;
-        }
-
-        const infoAtividade = atividadesData[atividadeId];
-        if (!infoAtividade) {
-            alert('Atividade não encontrada.');
-            return;
-        }
-
-        const confirma = confirm(`Deseja realmente remover ${horasRemov.toFixed(1)}h lançadas para "${infoAtividade.nome}"? Esta ação irá subtrair essas horas.`);
-        if (!confirma) return;
-
-        // Subtrai as horas da atividade e do total (proteção para não ficar negativo)
-        const atualLancado = infoAtividade.lancado;
-        const subtrair = Math.min(horasRemov, atualLancado);
-        infoAtividade.lancado = Math.max(0, atualLancado - subtrair);
-
-        totalHoras = Math.max(0, totalHoras - subtrair);
-
-        // Remove a linha da lista de histórico
-        entry.remove();
-
- 
-        if (!historicoLista.querySelector('.historico-entry')) {
-            historicoLista.innerHTML = '<p class="historico-placeholder">Nenhuma atividade lançada ainda.</p>';
-            historicoVazio = true;
-        }
-
-        // Atualiza tabela, KPIs e salva
-        atualizarLinhaTabela(atividadeId, infoAtividade.lancado);
-        atualizarProgressoUI();
-        salvarDados();
-    }
-
-    
     function carregarDados() {
         const savedData = localStorage.getItem(STORAGE_KEY);
         
@@ -183,32 +81,142 @@ document.addEventListener('DOMContentLoaded', () => {
                 historicoLista.innerHTML = loadedState.historicoHTML;
                 historicoVazio = loadedState.historicoVazio;
 
-               
                 for (const id in atividadesData) {
                     if (loadedState.atividades[id]) {
                         atividadesData[id].lancado = loadedState.atividades[id].lancado;
                     }
                 }
                 
-            
-                    if (!historicoVazio) {
-                        const placeholder = historicoLista.querySelector('.historico-placeholder');
-                        if (placeholder) placeholder.remove();
-                    }
+                if (!historicoVazio) {
+                    const placeholder = historicoLista.querySelector('.historico-placeholder');
+                    if (placeholder) placeholder.remove();
+                }
 
-                 
-                    attachHistoricoDeleteHandlers();
+                attachHistoricoDeleteHandlers();
 
             } catch (error) {
-                console.error("Erro ao carregar dados salvos (JSON inválido):", error);
-                localStorage.removeItem(STORAGE_KEY); // Limpa dados corrompidos
+                console.error("Erro ao carregar dados salvos:", error);
+                localStorage.removeItem(STORAGE_KEY);
             }
         }
     }
 
+    function zerarTodasHoras() {
+        const confirma = confirm('Tem certeza que deseja zerar todas as horas lançadas e limpar o histórico? Esta ação não pode ser desfeita.');
+        if (!confirma) return;
 
-    
+        for (const id in atividadesData) {
+            atividadesData[id].lancado = 0.0;
+        }
 
+        totalHoras = 0.0;
+        historicoLista.innerHTML = '<p class="historico-placeholder">Nenhuma atividade lançada ainda.</p>';
+        historicoVazio = true;
+
+        popularTabela();
+        atualizarProgressoUI();
+        salvarDados();
+    }
+
+    // --- Gestão do Histórico ---
+    function attachHistoricoDeleteHandlers() {
+        const buttons = historicoLista.querySelectorAll('.btn-delete');
+        buttons.forEach(btn => {
+            btn.removeEventListener('click', onClickExcluir);
+            btn.addEventListener('click', onClickExcluir);
+        });
+    }
+
+    function onClickExcluir(event) {
+        const btn = event.currentTarget;
+        const entry = btn.closest('.historico-entry');
+        if (!entry) return;
+
+        let atividadeId = btn.dataset.id;
+        let horasStr = btn.dataset.horas;
+
+        if (!atividadeId || !horasStr) {
+            const text = entry.textContent || '';
+            const horasMatch = text.match(/\+\s?(\d+[\.,]?\d*)\s?h/);
+            if (horasMatch) {
+                horasStr = horasMatch[1].replace(',', '.');
+            }
+            const nomeMatch = text.split('-').pop();
+            if (nomeMatch) {
+                const nome = nomeMatch.trim();
+                for (const id in atividadesData) {
+                    if (atividadesData[id].nome === nome) {
+                        atividadeId = id;
+                        break;
+                    }
+                }
+            }
+        }
+
+        const horasRemov = parseFloat(horasStr);
+
+        if (!atividadeId || isNaN(horasRemov)) {
+            alert('Não foi possível identificar corretamente a atividade ou as horas deste lançamento.');
+            return;
+        }
+
+        const infoAtividade = atividadesData[atividadeId];
+        if (!infoAtividade) {
+            alert('Atividade não encontrada.');
+            return;
+        }
+
+        const confirma = confirm(`Deseja realmente remover ${horasRemov.toFixed(1)}h lançadas para "${infoAtividade.nome}"?`);
+        if (!confirma) return;
+
+        const atualLancado = infoAtividade.lancado;
+        const subtrair = Math.min(horasRemov, atualLancado);
+        infoAtividade.lancado = Math.max(0, atualLancado - subtrair);
+        totalHoras = Math.max(0, totalHoras - subtrair);
+
+        entry.remove();
+
+        if (!historicoLista.querySelector('.historico-entry')) {
+            historicoLista.innerHTML = '<p class="historico-placeholder">Nenhuma atividade lançada ainda.</p>';
+            historicoVazio = true;
+        }
+
+        atualizarLinhaTabela(atividadeId, infoAtividade.lancado);
+        atualizarProgressoUI();
+        salvarDados();
+    }
+
+    function adicionarAoHistorico(id, nome, horas) {
+        if (historicoVazio) {
+            historicoLista.innerHTML = '';
+            historicoVazio = false;
+        }
+
+        const dataStr = new Date().toLocaleDateString('pt-BR');
+        const div = document.createElement('div');
+        div.className = 'historico-entry';
+
+        const span = document.createElement('span');
+        span.textContent = `[${dataStr}] +${horas.toFixed(1)}h - ${nome}`;
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn-delete';
+        btn.textContent = 'Remover';
+        
+        btn.dataset.id = id;
+        btn.dataset.horas = horas.toFixed(1);
+
+        div.appendChild(span);
+        div.appendChild(btn);
+
+        historicoLista.appendChild(div);
+        historicoLista.scrollTop = historicoLista.scrollHeight;
+
+        btn.addEventListener('click', onClickExcluir);
+    }
+
+    // --- Lógica da Interface (UI) ---
     function popularTabela() {
         tabelaCorpo.innerHTML = '';
         for (const id in atividadesData) {
@@ -279,11 +287,10 @@ document.addEventListener('DOMContentLoaded', () => {
         totalHoras += horasAContar;
 
         atualizarLinhaTabela(selectedActivityId, infoAtividade.lancado);
-    adicionarAoHistorico(selectedActivityId, infoAtividade.nome, horasAContar);
+        adicionarAoHistorico(selectedActivityId, infoAtividade.nome, horasAContar);
         atualizarProgressoUI();
         
         inputHoras.value = "1.0";
-
         salvarDados();
     }
 
@@ -293,39 +300,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const celula = linha.querySelector('td[data-tipo="lancado"]');
             celula.textContent = `${novoValor.toFixed(1)}h`;
         }
-    }
-
-    function adicionarAoHistorico(id, nome, horas) {
-        if (historicoVazio) {
-            historicoLista.innerHTML = '';
-            historicoVazio = false;
-        }
-
-        const dataStr = new Date().toLocaleDateString('pt-BR');
-
-       
-        const div = document.createElement('div');
-        div.className = 'historico-entry';
-
-        const span = document.createElement('span');
-        span.textContent = `[${dataStr}] +${horas.toFixed(1)}h - ${nome}`;
-
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'btn-delete';
-        btn.textContent = 'Remover';
-        
-        btn.dataset.id = id;
-        btn.dataset.horas = horas.toFixed(1);
-
-        div.appendChild(span);
-        div.appendChild(btn);
-
-        historicoLista.appendChild(div);
-        historicoLista.scrollTop = historicoLista.scrollHeight;
-
-        
-        btn.addEventListener('click', onClickExcluir);
     }
 
     function calcularNota(horas) {
@@ -351,16 +325,11 @@ document.addEventListener('DOMContentLoaded', () => {
         kpiHorasFaltantes.textContent = horasFaltantes.toFixed(1);
     }
 
-
-    
+    // --- Inicialização ---
     carregarDados();        
     popularTabela();        
     atualizarProgressoUI(); 
     
-    
     formLancamento.addEventListener('submit', adicionarAtividade);
-    
     if (btnZerar) btnZerar.addEventListener('click', zerarTodasHoras);
-
 });
-
